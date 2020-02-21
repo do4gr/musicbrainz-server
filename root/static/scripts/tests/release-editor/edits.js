@@ -11,13 +11,13 @@ import test from 'tape';
 
 import MB from '../../common/MB';
 import * as validation from '../../edit/validation';
-import '../../relationship-editor/common/viewModel';
 import fields from '../../release-editor/fields';
+import exportTypeInfo from '../exportTypeInfo';
 import {linkTypeTree, linkAttributeTypes} from '../typeInfo';
 
 import * as common from './common';
 
-MB.relationshipEditor.exportTypeInfo(
+exportTypeInfo(
   linkTypeTree,
   linkAttributeTypes,
 );

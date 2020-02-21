@@ -344,6 +344,9 @@ export function createUrlObject(
 export function createWorkObject(
   props?: $ReadOnly<{
     ...CommonPropsT,
+    +_fromBatchCreateWorksDialog?: boolean,
+    +languages?: $ReadOnlyArray<WorkLanguageT>,
+    +typeID?: number | null,
   }>,
 ): WorkT {
   return {

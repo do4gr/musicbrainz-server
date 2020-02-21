@@ -10,8 +10,7 @@
 export type SearchableTypeT = EntityItemT['entityType'];
 
 export type StateT<T: EntityItemT> = {
-  +activeUser: ActiveEditorT | null,
-  +canChangeType?: (string) => boolean,
+  +canChangeType?: ?((string) => boolean),
   +containerClass?: string,
   +disabled?: boolean,
   +entityType: T['entityType'],
@@ -19,12 +18,18 @@ export type StateT<T: EntityItemT> = {
   +highlightedIndex: number,
   +id: string,
   +indexedSearch: boolean,
+  +inputChangeHook?: (
+    inputValue: string,
+    state: StateT<T>,
+    selectItem: (OptionItemT<T>) => boolean,
+  ) => boolean,
   +inputValue: string,
   +isAddEntityDialogOpen?: boolean,
   +isLookupPerformed?: boolean,
   +isOpen: boolean,
   +items: $ReadOnlyArray<ItemT<T>>,
   +labelClass?: string,
+  +labelStyle?: {...},
   +page: number,
   +pendingSearch: string | null,
   +placeholder?: string,
@@ -127,6 +132,7 @@ export type EntityItemT =
   | GenreT
   | InstrumentT
   | LabelT
+  | LanguageT
   | LinkAttrTypeT
   | LinkTypeT
   | PlaceT

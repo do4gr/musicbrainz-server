@@ -25,6 +25,7 @@ import expand2react from '../common/i18n/expand2react';
 import linkedEntities from '../common/linkedEntities';
 import MB from '../common/MB';
 import {groupBy, keyBy, uniqBy} from '../common/utility/arrays';
+import {getSourceEntityData} from '../common/utility/catalyst';
 import isDateEmpty from '../common/utility/isDateEmpty';
 import formatDatePeriod from '../common/utility/formatDatePeriod';
 import {hasSessionStorage} from '../common/utility/storage';
@@ -32,11 +33,15 @@ import {uniqueId} from '../common/utility/strings';
 import {bracketedText} from '../common/utility/bracketed';
 import {isMalware} from '../../../url/utility/isGreyedOut';
 import {compareDatePeriods} from '../common/utility/compareDates';
+import {
+  appendHiddenRelationshipInputs,
+} from '../relationship-editor-v2/utility/prepareHtmlFormSubmission';
 
 import isPositiveInteger from './utility/isPositiveInteger';
 import HelpIcon from './components/HelpIcon';
 import RemoveButton from './components/RemoveButton';
 import URLInputPopover from './components/URLInputPopover';
+import withLoadedTypeInfo from './components/withLoadedTypeInfo';
 import {linkTypeOptions} from './forms';
 import * as URLCleanup from './URLCleanup';
 import type {RelationshipTypeT} from './URLCleanup';
@@ -93,18 +98,21 @@ export type LinkRelationshipT = $ReadOnly<{
 type LinksEditorProps = {
   +errorObservable?: (boolean) => void,
   +isNewEntity: boolean,
-  +sourceData: CoreEntityT | {
-    +entityType: CoreEntityTypeT,
-    +id?: void,
-    +relationships?: void,
-  },
+  +sourceData:
+    | CoreEntityT
+    | {
+        +entityType: CoreEntityTypeT,
+        +id?: void,
+        +isNewEntity?: true,
+        +relationships?: void,
+      },
 };
 
 type LinksEditorState = {
   +links: $ReadOnlyArray<LinkStateT>,
 };
 
-export class ExternalLinksEditor
+class _ExternalLinksEditor
   extends React.Component<LinksEditorProps, LinksEditorState> {
   tableRef: {current: HTMLTableElement | null};
 
@@ -1499,6 +1507,13 @@ export class ExternalLink extends React.Component<LinkProps> {
   }
 }
 
+export const ExternalLinksEditor:
+  React.AbstractComponent<LinksEditorProps, _ExternalLinksEditor> =
+  withLoadedTypeInfo<LinksEditorProps, _ExternalLinksEditor>(
+    _ExternalLinksEditor,
+    new Set(['link_type', 'link_attribute_type']),
+  );
+
 const defaultLinkState: LinkStateT = {
   begin_date: EMPTY_PARTIAL_DATE,
   deleted: false,
@@ -1792,12 +1807,14 @@ function isMusicBrainz(url) {
 
 type InitialOptionsT = {
   errorObservable?: (boolean) => void,
-  mountPoint: Element,
-  sourceData: CoreEntityT | {
-    +entityType: CoreEntityTypeT,
-    +id?: void,
-    +relationships?: void,
-  },
+  sourceData?:
+    | CoreEntityT
+    | {
+        +entityType: CoreEntityTypeT,
+        +id?: void,
+        +isNewEntity?: true,
+        +relationships?: void,
+      },
 };
 
 type SeededUrlShape = {
@@ -1806,13 +1823,15 @@ type SeededUrlShape = {
 };
 
 export function createExternalLinksEditor(
-  options: InitialOptionsT,
+  options?: InitialOptionsT,
 ): {
-  +externalLinksEditorRef: React$Ref<typeof ExternalLinksEditor>,
+  +externalLinksEditorRef: {current: _ExternalLinksEditor | null},
   +root: {+unmount: () => void, ...},
 } {
-  const sourceData = options.sourceData;
-  const mountPoint = options.mountPoint;
+  const sourceData = options?.sourceData ?? getSourceEntityData();
+  invariant(sourceData);
+
+  const mountPoint = $('#external-links-editor-container')[0];
   let root = $(mountPoint).data('react-root');
   if (!root) {
     root = ReactDOMClient.createRoot(mountPoint);
@@ -1821,7 +1840,7 @@ export function createExternalLinksEditor(
   const externalLinksEditorRef = React.createRef();
   root.render(
     <ExternalLinksEditor
-      errorObservable={options.errorObservable}
+      errorObservable={options?.errorObservable}
       isNewEntity={!sourceData.id}
       ref={externalLinksEditorRef}
       sourceData={sourceData}
@@ -1830,4 +1849,31 @@ export function createExternalLinksEditor(
   return {externalLinksEditorRef, root};
 }
 
-MB.createExternalLinksEditor = createExternalLinksEditor;
+export function createExternalLinksEditorForHtmlForm(
+  formName: string,
+): void {
+  const {
+    externalLinksEditorRef,
+  } = createExternalLinksEditor();
+  $(document).on('submit', '#page form', function () {
+    invariant(externalLinksEditorRef.current);
+    prepareExternalLinksHtmlFormSubmission(
+      formName,
+      externalLinksEditorRef.current,
+    );
+  });
+}
+
+export function prepareExternalLinksHtmlFormSubmission(
+  formName: string,
+  externalLinksEditor: _ExternalLinksEditor,
+): void {
+  appendHiddenRelationshipInputs(function (pushInput) {
+    externalLinksEditor.getFormData(formName + '.url', 0, pushInput);
+
+    const links = externalLinksEditor.state.links;
+    if (hasSessionStorage && links.length) {
+      window.sessionStorage.setItem('submittedLinks', JSON.stringify(links));
+    }
+  });
+}

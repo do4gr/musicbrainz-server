@@ -11,7 +11,6 @@ require('./GuessCase');
 require('./guessFeat');
 require('./i18n');
 require('./i18n/expand2');
-require('./relationship-editor');
 require('./release-editor/actions');
 require('./release-editor/common');
 require('./release-editor/dialogs');

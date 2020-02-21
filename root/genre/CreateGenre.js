@@ -17,26 +17,17 @@ import type {GenreFormT} from './types';
 
 type Props = {
   +$c: CatalystContextT,
-  +attrInfo: LinkAttrTypeOptionsT,
   +form: GenreFormT,
-  +typeInfo: LinkTypeOptionsT,
 };
 
 const CreateGenre = ({
   $c,
-  attrInfo,
   form,
-  typeInfo,
 }: Props): React.Element<typeof Layout> => (
   <Layout fullWidth title={l('Add a new genre')}>
     <div id="content">
       <h1>{l('Add a new genre')}</h1>
-      <GenreEditForm
-        $c={$c}
-        attrInfo={attrInfo}
-        form={form}
-        typeInfo={typeInfo}
-      />
+      <GenreEditForm $c={$c} form={form} />
     </div>
     {manifest.js('genre/components/GenreEditForm', {async: 'async'})}
   </Layout>

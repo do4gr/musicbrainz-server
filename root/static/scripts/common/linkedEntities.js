@@ -48,7 +48,7 @@ export type LinkedEntitiesT = {
     [linkTypeIdOrGid: StrOrNum]: LinkTypeT,
   },
   link_type_tree: {
-    [entityTypes: string]: $ReadOnlyArray<LinkTypeT>,
+    [entityTypes: string]: Array<LinkTypeT>,
   },
   mergeLinkedEntities: (
     update: ?$ReadOnly<$Partial<LinkedEntitiesT>>,
@@ -87,7 +87,7 @@ export type LinkedEntitiesT = {
     [seriesOrderingTypeId: number]: SeriesOrderingTypeT,
   },
   series_type: {
-    [seriesTypeId: number]: SeriesTypeT,
+    [seriesTypeId: string]: SeriesTypeT,
   },
   url: {
     [urlId: number]: UrlT,
@@ -97,6 +97,9 @@ export type LinkedEntitiesT = {
   },
   work_attribute_type: {
     [workAttributeTypeId: number]: WorkAttributeTypeT,
+  },
+  work_type: {
+    [workTypeId: string]: WorkTypeT,
   },
   ...
 };

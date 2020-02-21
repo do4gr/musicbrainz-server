@@ -13,37 +13,31 @@ import EnterEdit from '../../../../components/EnterEdit';
 import EnterEditNote from '../../../../components/EnterEditNote';
 import FormRowTextLong from '../../../../components/FormRowTextLong';
 import type {GenreFormT} from '../../../../genre/types';
-import {ExternalLinksEditor} from '../../edit/externalLinks';
-import {exportTypeInfo} from '../../relationship-editor/common/viewModel';
-import {prepareSubmission} from '../../relationship-editor/generic';
+import {
+  ExternalLinksEditor,
+  prepareExternalLinksHtmlFormSubmission,
+} from '../../edit/externalLinks';
 
 type Props = {
   +$c: CatalystContextT,
-  +attrInfo: LinkAttrTypeOptionsT,
   +form: GenreFormT,
-  +typeInfo: LinkTypeOptionsT,
 };
 
 const GenreEditForm = ({
   $c,
-  attrInfo,
   form,
-  typeInfo,
 }: Props): React.Element<'form'> => {
   const genre = $c.stash.source_entity;
   invariant(genre && genre.entityType === 'genre');
 
-  const [isTypeInfoExported, setTypeInfoExported] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!isTypeInfoExported) {
-      exportTypeInfo(typeInfo, attrInfo);
-      setTypeInfoExported(true);
-    }
-  }, [isTypeInfoExported, attrInfo, typeInfo]);
+  const externalLinksEditorRef = React.createRef();
 
   const handleSubmit = () => {
-    prepareSubmission('edit-genre');
+    invariant(externalLinksEditorRef.current);
+    prepareExternalLinksHtmlFormSubmission(
+      'edit-genre',
+      externalLinksEditorRef.current,
+    );
   };
 
   return (
@@ -73,12 +67,11 @@ const GenreEditForm = ({
 
         <fieldset>
           <legend>{l('External Links')}</legend>
-          {isTypeInfoExported ? (
-            <ExternalLinksEditor
-              isNewEntity={!genre.id}
-              sourceData={genre}
-            />
-          ) : null}
+          <ExternalLinksEditor
+            isNewEntity={!genre.id}
+            ref={externalLinksEditorRef}
+            sourceData={genre}
+          />
         </fieldset>
 
         <EnterEditNote field={form.field.edit_note} />

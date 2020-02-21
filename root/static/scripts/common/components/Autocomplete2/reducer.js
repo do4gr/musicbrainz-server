@@ -11,6 +11,7 @@ import {
   TITLES as ADD_NEW_ENTITY_TITLES,
 } from '../../../edit/components/AddEntityDialog';
 import {unwrapNl} from '../../i18n';
+import {getCatalystContext} from '../../utility/catalyst';
 import {
   isLocationEditor,
   isRelationshipEditor,
@@ -163,7 +164,7 @@ export function generateItems<+T: EntityItemT>(
 export function determineIfUserCanAddEntities<+T: EntityItemT>(
   state: StateT<T>,
 ): boolean {
-  const user = state.activeUser;
+  const user = getCatalystContext().user;
 
   if (!user || !IS_TOP_WINDOW) {
     return false;
@@ -492,6 +493,16 @@ export function runReducer<+T: EntityItemT>(
 
     case 'set-recent-items': {
       state.recentItems = action.items;
+
+      const staticItems = state.staticItems;
+      if (staticItems) {
+        state.recentItems = state.recentItems.filter(
+          (recentItem) => (
+            staticItems.find(staticItem => staticItem.id === recentItem.id)
+          ),
+        );
+      }
+
       updateItems = true;
       break;
     }

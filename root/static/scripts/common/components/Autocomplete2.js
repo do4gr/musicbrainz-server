@@ -121,11 +121,18 @@ function setScrollPosition(menuId: string) {
 }
 
 type InitialStateT<T: EntityItemT> = {
-  +activeUser?: ActiveEditorT,
-  +canChangeType?: (string) => boolean,
+  +canChangeType?: ?((string) => boolean),
+  +containerClass?: string,
+  +disabled?: boolean,
   +entityType: T['entityType'],
   +id: string,
+  +inputChangeHook?: (
+    inputValue: string,
+    state: StateT<T>,
+    selectItem: (OptionItemT<T>) => boolean,
+  ) => boolean,
   +inputValue?: string,
+  +labelStyle?: {...},
   +placeholder?: string,
   +recentItemsKey?: string,
   +selectedEntity?: T | null,
@@ -140,6 +147,7 @@ export function createInitialState<+T: EntityItemT>(
   initialState: InitialStateT<T>,
 ): {...StateT<T>} {
   const {
+    disabled = false,
     entityType,
     inputValue: initialInputValue,
     recentItemsKey,
@@ -161,7 +169,7 @@ export function createInitialState<+T: EntityItemT>(
   }
 
   const state: {...StateT<T>} = {
-    activeUser: null,
+    disabled,
     entityType,
     error: 0,
     highlightedIndex: -1,
@@ -192,7 +200,7 @@ type AutocompleteItemPropsT<T: EntityItemT> = {
   isHighlighted: boolean,
   isSelected: boolean,
   item: ItemT<T>,
-  selectItem: (ItemT<T>) => void,
+  selectItem: (ItemT<T>) => boolean,
 };
 
 const AutocompleteItem = React.memo(<+T: EntityItemT>({
@@ -264,6 +272,7 @@ const Autocomplete2 = (React.memo(<+T: EntityItemT>(
     entityType,
     highlightedIndex,
     id,
+    inputChangeHook,
     inputValue,
     isAddEntityDialogOpen,
     isOpen,
@@ -305,9 +314,29 @@ const Autocomplete2 = (React.memo(<+T: EntityItemT>(
   const selectItem = React.useCallback((item) => {
     if (!item.disabled) {
       stopRequests();
+      if (item.type === 'option') {
+        const newEntityType = item.entity.entityType;
+        if (newEntityType !== entityType) {
+          if (canChangeType?.(newEntityType)) {
+            dispatch({
+              entityType: newEntityType,
+              type: 'change-entity-type',
+            });
+          } else {
+            return false;
+          }
+        }
+      }
       dispatch({item, type: 'select-item'});
+      return true;
     }
-  }, [stopRequests, dispatch]);
+    return false;
+  }, [
+    stopRequests,
+    entityType,
+    canChangeType,
+    dispatch,
+  ]);
 
   function handleButtonClick(
     event: SyntheticMouseEvent<HTMLButtonElement>,
@@ -345,6 +374,17 @@ const Autocomplete2 = (React.memo(<+T: EntityItemT>(
 
     if (!newCleanInputValue) {
       stopRequests();
+      return;
+    }
+
+    if (
+      inputChangeHook != null &&
+      inputChangeHook(
+        newCleanInputValue,
+        state,
+        selectItem,
+      )
+    ) {
       return;
     }
 
@@ -392,15 +432,7 @@ const Autocomplete2 = (React.memo(<+T: EntityItemT>(
           type: 'option',
         };
 
-        if (entity.entityType === entityType) {
-          selectItem(option);
-        } else if (canChangeType && canChangeType(entity.entityType)) {
-          dispatch({
-            entityType: entity.entityType,
-            type: 'change-entity-type',
-          });
-          selectItem(option);
-        } else {
+        if (!selectItem(option)) {
           dispatch(SHOW_LOOKUP_TYPE_ERROR);
         }
       });
@@ -629,9 +661,11 @@ const Autocomplete2 = (React.memo(<+T: EntityItemT>(
         className={state.labelClass}
         htmlFor={inputId}
         id={labelId}
-        style={DISPLAY_NONE_STYLE}
+        style={state.labelStyle || DISPLAY_NONE_STYLE}
       >
-        {state.placeholder || SEARCH_PLACEHOLDERS[entityType]()}
+        {addColonText(
+          state.placeholder || SEARCH_PLACEHOLDERS[entityType](),
+        )}
       </label>
       <div
         aria-expanded={isOpen ? 'true' : 'false'}

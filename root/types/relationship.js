@@ -17,8 +17,6 @@ declare type LinkAttrT = {
   +typeName: string,
 };
 
-declare type LinkAttrTypeOptionsT = $ReadOnlyArray<LinkAttrTypeT>;
-
 declare type LinkAttrTypeT = {
   ...OptionTreeT<'link_attribute_type'>,
   +children?: $ReadOnlyArray<LinkAttrTypeT>,
@@ -27,6 +25,10 @@ declare type LinkAttrTypeT = {
   +instrument_comment?: string,
   +instrument_type_id?: number,
   +instrument_type_name?: string,
+  l_description?: string,
+  l_name?: string,
+  l_name_normalized?: string,
+  level?: number,
   +root_gid: string,
   +root_id: number,
 };
@@ -36,13 +38,9 @@ declare type LinkTypeAttrTypeT = {
   +min: number | null,
 };
 
-declare type LinkTypeOptionsT = {
-  +[entityCombination: string]: $ReadOnlyArray<LinkTypeT>,
-};
-
 declare type LinkTypeT = {
   ...OptionTreeT<'link_type'>,
-  +attributes: {+[typeId: number]: LinkTypeAttrTypeT},
+  +attributes: {+[typeId: StrOrNum]: LinkTypeAttrTypeT},
   +cardinality0: number,
   +cardinality1: number,
   +children?: $ReadOnlyArray<LinkTypeT>,
@@ -61,6 +59,7 @@ declare type LinkTypeT = {
   l_description?: string,
   l_link_phrase?: string,
   l_name?: string,
+  l_name_normalized?: string,
   l_reverse_link_phrase?: string,
   +link_phrase: string,
   +long_link_phrase: string,
@@ -90,10 +89,10 @@ declare type RelationshipT = $ReadOnly<{
   ...EditableRoleT,
   +attributes: $ReadOnlyArray<LinkAttrT>,
   +backward: boolean,
-  +entity0?: CoreEntityT,
+  +entity0?: ?CoreEntityT,
   +entity0_credit: string,
   +entity0_id: number,
-  +entity1?: CoreEntityT,
+  +entity1?: ?CoreEntityT,
   +entity1_credit: string,
   +entity1_id: number,
   +id: number,

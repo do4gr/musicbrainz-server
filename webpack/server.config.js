@@ -51,8 +51,12 @@ module.exports = {
       /*
        * jquery and @popperjs are resolved to root/static/scripts/empty.js
        * on the server. See NormalModuleReplacementPlugin below.
+       *
+       * weight-balanced-tree is allowed because it needs to be transpiled to
+       * remove Flow and ESM syntax; this is also fine because it's free of
+       * side-effects.
        */
-      allowlist: [/(jquery|@popperjs)/],
+      allowlist: [/(jquery|@popperjs|weight-balanced-tree)/],
       modulesFromFile: true,
     }),
 
@@ -86,6 +90,9 @@ module.exports = {
   node: false,
 
   output: {
+    environment: {
+      module: false,
+    },
     filename: '[name].js',
     libraryTarget: 'commonjs2',
     path: dirs.BUILD,

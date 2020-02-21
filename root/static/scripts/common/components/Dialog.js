@@ -13,6 +13,8 @@ import {
   detectIfAnchorIsTabbable,
   findFirstTabbableElement,
   handleTabKeyPress,
+  handleTab,
+  isElementTabbable,
 } from '../utility/focusManagement';
 
 import ErrorBoundary from './ErrorBoundary';
@@ -87,7 +89,10 @@ const Dialog = ({
      * the <select> options list.
      */
     const tid = setTimeout(() => {
-      const toFocus = findFirstTabbableElement(dialogNode);
+      const toFocus = findFirstTabbableElement(
+        dialogNode,
+        true, /* skipAnchors */
+      );
       if (toFocus) {
         toFocus.focus();
       }

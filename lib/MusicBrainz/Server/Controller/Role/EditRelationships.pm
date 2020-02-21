@@ -274,7 +274,9 @@ role {
         my $model = $self->config->{model};
         my $source_type = model_to_type($model);
         my $source = $c->stash->{$self->{entity_name}};
-        my $source_entity = $source ? $source->TO_JSON : {entityType => $source_type};
+        my $source_entity = $source
+            ? $source->TO_JSON
+            : {entityType => $source_type, isNewEntity => \1};
 
         if ($source) {
             my @existing_relationships =
@@ -295,24 +297,10 @@ role {
         # Grrr. release_group => release-group.
         $form_name =~ s/_/-/;
 
-        my $seeded_relationships = get_seeded_relationships($c, $source_type, $source);
-        my @link_type_tree = $c->model('LinkType')->get_full_tree;
-        my @link_attribute_types = $c->model('LinkAttributeType')->get_all;
-        my $type_info = build_type_info(
-            $c,
-            qr/(^$source_type-|-$source_type$)/,
-            @link_type_tree,
-        );
-
         $c->stash(
-            seeded_relationships => $c->json->encode(to_json_array($seeded_relationships)),
             source_entity => $source_entity,
-            attr_info => $c->json->encode(\@link_attribute_types),
-            type_info => $c->json->encode($type_info),
+            seeded_relationships => get_seeded_relationships($c, $source_type, $source),
         );
-
-        $c->stash->{component_props}{attrInfo} = to_json_array(\@link_attribute_types);
-        $c->stash->{component_props}{typeInfo} = $type_info;
 
         my $post_creation = delete $opts{post_creation};
 
