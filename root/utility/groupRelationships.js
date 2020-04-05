@@ -33,6 +33,7 @@ import {
 } from '../static/scripts/edit/utility/linkPhrase';
 
 import areDatePeriodsEqual from './areDatePeriodsEqual';
+import getSortName from './getSortName';
 import isLinkTypeDirectionOrderable from './isLinkTypeDirectionOrderable';
 
 const UNIT_SEP = '\x1F';
@@ -317,8 +318,6 @@ function mergeTargetGroupsByTracks(
     }
   }
 }
-
-const getSortName = x => x.entityType === 'artist' ? x.sort_name : x.name;
 
 function areSetsEqual<T>(a: Set<T>, b: Set<T>): boolean {
   if (a.size !== b.size) {
