@@ -22,7 +22,7 @@ import getScriptArgs from '../common/utility/getScriptArgs';
 import {buildOptionsTree} from '../edit/forms';
 import typeBubble from '../edit/typeBubble';
 import {initializeBubble} from '../edit/MB/Control/Bubble';
-import {createCompoundField} from '../edit/utility/createField';
+import {createCompoundFieldFromObject} from '../edit/utility/createField';
 import {pushCompoundField, pushField} from '../edit/utility/pushField';
 import {initializeGuessCase} from '../guess-case/MB/Control/GuessCase';
 import {LANGUAGE_MUL_ID, LANGUAGE_ZXX_ID} from '../common/constants';
@@ -232,7 +232,7 @@ class ViewModel {
     const attributesField = form.field.attributes;
     const fieldName = attributesField.html_name + '.' +
       String(attributesField.field.length);
-    const attr = new WorkAttribute(createCompoundField(fieldName, {
+    const attr = new WorkAttribute(createCompoundFieldFromObject(fieldName, {
       type_id: null,
       value: null,
     }), this);
