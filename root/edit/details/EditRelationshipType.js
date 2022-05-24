@@ -13,7 +13,9 @@ import IntentionallyRawIcon from '../components/IntentionallyRawIcon';
 import Cardinality from '../../static/scripts/common/components/Cardinality';
 import DescriptiveLink
   from '../../static/scripts/common/components/DescriptiveLink';
-import EntityLink from '../../static/scripts/common/components/EntityLink';
+import EntityLink, {
+  DeletedLink,
+} from '../../static/scripts/common/components/EntityLink';
 import OrderableDirection
   from '../../static/scripts/common/components/OrderableDirection';
 import Warning from '../../static/scripts/common/components/Warning';
@@ -57,7 +59,9 @@ function formatAttribute(attribute, index) {
 function formatExample(example, index) {
   const sourceId = example.relationship.source_id;
   const sourceType = example.relationship.source_type;
-  const source = linkedEntities[sourceType][sourceId];
+  const source = sourceId == null
+    ? null
+    : linkedEntities[sourceType][sourceId];
   const target = example.relationship.target;
 
   return (
@@ -67,7 +71,9 @@ function formatExample(example, index) {
           example.relationship.verbosePhrase,
         ),
         {
-          entity0: <DescriptiveLink entity={source} />,
+          entity0: source
+            ? <DescriptiveLink entity={source} />
+            : <DeletedLink allowNew={false} name={null} />,
           entity1: <DescriptiveLink entity={target} />,
         },
       )}
