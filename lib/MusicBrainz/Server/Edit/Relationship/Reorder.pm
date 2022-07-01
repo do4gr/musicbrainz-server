@@ -177,10 +177,8 @@ sub adjust_edit_pending
 sub initialize {
     my ($self, %opts) = @_;
 
-    my $link_type_id = delete $opts{link_type_id} or die 'Missing link type';
+    my $link_type = delete $opts{link_type} or die 'Missing link type';
     my $relationship_order = $opts{relationship_order} or die 'Missing relationship order';
-
-    my $lt = $self->c->model('LinkType')->get_by_id($link_type_id);
 
     $relationship_order = [ grep {
         $_->{old_order} != $_->{new_order}
