@@ -9,13 +9,14 @@
 
 import * as React from 'react';
 
-import FieldErrors from './FieldErrors';
-import FormRow from './FormRow';
-import FormLabel from './FormLabel';
 import PartialDateInput, {
   type ActionT as PartialDateInputActionT,
   runReducer as runPartialDateInputReducer,
-} from './PartialDateInput';
+} from '../static/scripts/common/components/PartialDateInput';
+
+import FieldErrors from './FieldErrors';
+import FormRow from './FormRow';
+import FormLabel from './FormLabel';
 
 export type ActionT = PartialDateInputActionT;
 
