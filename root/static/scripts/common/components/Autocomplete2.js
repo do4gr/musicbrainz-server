@@ -11,7 +11,10 @@ import * as React from 'react';
 
 import ENTITIES from '../../../../../entities';
 import AddEntityDialog from '../../edit/components/AddEntityDialog';
-import {MBID_REGEXP} from '../constants';
+import {
+  DISPLAY_NONE_STYLE,
+  MBID_REGEXP,
+} from '../constants';
 import useOutsideClickEffect from '../hooks/useOutsideClickEffect';
 import clean from '../utility/clean';
 
@@ -28,7 +31,6 @@ import {
 } from './Autocomplete2/actions';
 import {
   ARIA_LIVE_STYLE,
-  DISPLAY_NONE_STYLE,
   SEARCH_PLACEHOLDERS,
 } from './Autocomplete2/constants';
 import formatItem from './Autocomplete2/formatters';
