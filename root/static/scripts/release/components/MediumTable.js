@@ -8,22 +8,13 @@
  */
 
 import * as React from 'react';
-import {captureException} from '@sentry/browser';
 
 import Paginator from '../../../../components/Paginator';
 import {CatalystContext} from '../../../../context';
-import mediumHasMultipleArtists
-  from '../../../../utility/mediumHasMultipleArtists';
 import DataTrackIcon
   from '../../common/components/DataTrackIcon';
-import MediumDescription
-  from '../../common/components/MediumDescription';
-import {uniqBy} from '../../common/utility/arrays';
-import pThrottle, {
-  ThrottleAbortError,
-} from '../../common/utility/pThrottle';
+import usePagedMediumTable from '../../common/hooks/usePagedMediumTable';
 import type {CreditsModeT, ActionT} from '../types';
-import linkedEntities from '../../common/linkedEntities';
 
 import MediumTrackRow from './MediumTrackRow';
 
@@ -38,28 +29,6 @@ type PropsT = {
   +tracks: $ReadOnlyArray<TrackWithRecordingT> | null,
 };
 
-type TracksResponseT = {
-  +linked_entities: {
-    link_attribute_type: {
-      [linkAttributeTypeIdOrGid: StrOrNum]: LinkAttrTypeT,
-    },
-    link_type: {
-      [linkTypeIdOrGid: StrOrNum]: LinkTypeT,
-    },
-  },
-  +pager: PagerT,
-  +tracks: $ReadOnlyArray<TrackWithRecordingT>,
-};
-
-const throttleFunc = pThrottle<[number, number], Response>({
-  interval: 1000,
-  limit: 1,
-});
-
-const fetchTracks = throttleFunc((mediumId: number, page: number) => {
-  return fetch('/ws/js/tracks/' + mediumId + '?page=' + page);
-});
-
 const MediumTable = (React.memo<PropsT>(({
   creditsMode,
   dispatch,
@@ -72,23 +41,15 @@ const MediumTable = (React.memo<PropsT>(({
 }: PropsT) => {
   const $c = React.useContext(CatalystContext);
 
-  const [loadingMessage, setLoadingMessage] =
-    React.useState('');
-
-  const [loadAllTracks, setLoadAllTracks] =
-    React.useState(false);
-
-  const showArtists = React.useMemo(
-    () => mediumHasMultipleArtists(release, tracks),
-    [release, tracks],
-  );
-
-  const loadedTrackCount = (tracks?.length) ?? 0;
-  const canLoadMoreTracks = isExpanded && hasUnloadedTracks;
-  const isLoading = (
-    canLoadMoreTracks &&
-    (loadedTrackCount === 0 || loadAllTracks)
-  );
+  const tableVars = usePagedMediumTable({
+    dispatch,
+    getColumnCount: (showArtists) => 4 + (showArtists ? 1 : 0),
+    release,
+    medium,
+    tracks,
+    hasUnloadedTracks,
+    isExpanded,
+  });
 
   const [audioTracks, dataTracks] = React.useMemo(() => {
     const audioTracks = [];
@@ -105,80 +66,7 @@ const MediumTable = (React.memo<PropsT>(({
     return [audioTracks, dataTracks];
   }, [tracks]);
 
-  const pagerRef = React.useRef<?PagerT>(medium.tracks_pager);
-
-  const loadMoreTracks = React.useCallback(() => {
-    if (canLoadMoreTracks) {
-      setLoadingMessage(l('Loading...'));
-
-      const pager = pagerRef.current;
-      const nextPage = (pager?.next_page) ?? 1;
-
-      const throttleResult = fetchTracks(medium.id, nextPage);
-
-      throttleResult.promise
-        .then<TracksResponseT>(response => response.json())
-        .then(result => {
-          const pager = result.pager;
-          pagerRef.current = pager;
-
-          linkedEntities.mergeLinkedEntities(result.linked_entities);
-
-          dispatch({
-            medium,
-            tracks: uniqBy(
-              (tracks || []).concat(result.tracks),
-              x => x.position,
-            ),
-            type: 'load-tracks',
-          });
-
-          setLoadingMessage('');
-        })
-        .catch((error) => {
-          if (!(error instanceof ThrottleAbortError)) {
-            captureException(error);
-            console.error(error);
-            setLoadingMessage(l('Failed to load the medium.'));
-            setLoadAllTracks(false);
-          }
-        });
-
-      return throttleResult;
-    }
-
-    return null;
-  }, [
-    canLoadMoreTracks,
-    tracks,
-    setLoadingMessage,
-    medium,
-    dispatch,
-  ]);
-
-  React.useEffect(() => {
-    let throttleResult;
-
-    if (isLoading) {
-      throttleResult = loadMoreTracks();
-    }
-
-    return () => {
-      throttleResult?.abort();
-    };
-  }, [
-    isLoading,
-    loadMoreTracks,
-  ]);
-
-  function toggleMedium(event) {
-    // Prevent the browser from following the link.
-    event.preventDefault();
-    dispatch({medium, type: 'toggle-medium'});
-  }
-
-  const position = String(medium.position);
-  const columnCount = 4 + (showArtists ? 1 : 0);
+  const columnCount = tableVars.columnCount;
   const tracksPager = medium.tracks_pager;
 
   return (
@@ -186,32 +74,18 @@ const MediumTable = (React.memo<PropsT>(({
       <thead>
         <tr className={medium.editsPending ? 'mp' : null}>
           <th colSpan={columnCount}>
-            <a
-              className="expand-medium"
-              href={
-                '/release/' + release.gid +
-                '/disc/' + position +
-                '#disc' + position
-              }
-              id={'disc' + position}
-              onClick={toggleMedium}
-            >
-              <span className="expand-triangle">
-                {isExpanded ? '\u25BC' : '\u25B6'}
-              </span>
-              <MediumDescription medium={medium} />
-            </a>
+            {tableVars.mediumHeaderLink}
           </th>
         </tr>
       </thead>
 
       <tbody style={isExpanded ? null : {display: 'none'}}>
-        {loadedTrackCount ? (
+        {tableVars.loadedTrackCount ? (
           <>
             <tr className="subh">
               <th className="pos t">{l('#')}</th>
               <th>{l('Title')}</th>
-              {showArtists ? (
+              {tableVars.showArtists ? (
                 <th>{l('Artist')}</th>
               ) : null}
               <th className="rating c">{l('Rating')}</th>
@@ -245,7 +119,7 @@ const MediumTable = (React.memo<PropsT>(({
                 creditsMode={creditsMode}
                 index={index}
                 key={track.id}
-                showArtists={showArtists}
+                showArtists={tableVars.showArtists}
                 track={track}
               />
             ))}
@@ -263,7 +137,7 @@ const MediumTable = (React.memo<PropsT>(({
                     creditsMode={creditsMode}
                     index={index}
                     key={track.id}
-                    showArtists={showArtists}
+                    showArtists={tableVars.showArtists}
                     track={track}
                   />
                 ))}
@@ -272,50 +146,7 @@ const MediumTable = (React.memo<PropsT>(({
           </>
         ) : null}
 
-        {(
-          loadedTrackCount &&
-          canLoadMoreTracks &&
-          !noScript &&
-          !(isLoading && loadingMessage)
-        ) ? (
-          <tr>
-            <td colSpan={columnCount} style={{padding: '1em'}}>
-              {texp.l(
-                `This medium has too many tracks to load at once;
-                 currently showing {loaded_track_count} out of
-                 {total_track_count} total.`,
-                {
-                  loaded_track_count: loadedTrackCount,
-                  total_track_count: medium.track_count || 0,
-                },
-              )}
-              {' '}
-              <a
-                className="load-tracks"
-                href="#"
-                onClick={(event) => {
-                  event.preventDefault();
-                  setLoadAllTracks(true);
-                }}
-              >
-                {l('Load all tracks...')}
-              </a>
-            </td>
-          </tr>
-          ) : null}
-
-        {loadingMessage ? (
-          <tr>
-            <td
-              colSpan={columnCount}
-              style={{padding: '1em'}}
-            >
-              <div className="loading-message">
-                {loadingMessage}
-              </div>
-            </td>
-          </tr>
-        ) : null}
+        {tableVars.pagingElements}
       </tbody>
     </table>
   );
