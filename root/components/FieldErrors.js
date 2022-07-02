@@ -14,7 +14,7 @@ import {type AnyFieldT} from '../utility/iterSubfields';
 import subfieldErrors from '../utility/subfieldErrors';
 
 // FIXME: Use expandable object instead of HTML string for safety (MBS-10632)
-const buildErrorListItem = (error, hasHtmlErrors = false, index) => {
+const buildErrorListItem = (error, hasHtmlErrors, index) => {
   if (hasHtmlErrors) {
     return (
       <li key={index}>{expand2react(error)}</li>
@@ -29,17 +29,13 @@ type Props = {
   +includeSubFields?: boolean,
 };
 
-const FieldErrors = ({
-  field,
+export const FieldErrorsList = ({
   hasHtmlErrors,
-  includeSubFields = true,
-}: Props): React.Element<'ul'> | null => {
-  if (!field) {
-    return null;
-  }
-  const errors = includeSubFields
-    ? subfieldErrors(field)
-    : field.errors;
+  errors,
+}: {
+  +errors: ?$ReadOnlyArray<string>,
+  +hasHtmlErrors: boolean,
+}): React.Element<'ul'> | null => {
   if (errors?.length) {
     return (
       <ul className="errors">
@@ -50,6 +46,25 @@ const FieldErrors = ({
     );
   }
   return null;
+};
+
+const FieldErrors = ({
+  field,
+  hasHtmlErrors = false,
+  includeSubFields = true,
+}: Props): React.Element<typeof FieldErrorsList> | null => {
+  if (!field) {
+    return null;
+  }
+  const errors = includeSubFields
+    ? subfieldErrors(field)
+    : field.errors;
+  return (
+    <FieldErrorsList
+      errors={errors}
+      hasHtmlErrors={hasHtmlErrors}
+    />
+  );
 };
 
 export default FieldErrors;
