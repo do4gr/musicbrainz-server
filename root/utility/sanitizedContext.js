@@ -37,6 +37,11 @@ function sanitizedContext(
     } : null,
     stash: {
       current_language: stash.current_language,
+      ...(
+        stash.source_entity == null
+          ? null
+          : {source_entity: stash.source_entity}
+      ),
     },
     user: user ? activeSanitizedEditor(user) : null,
   };

@@ -69,6 +69,7 @@ declare type CatalystStashT = {
   +release_artwork_count?: number,
   +release_cdtoc_count?: number,
   +server_languages?: $ReadOnlyArray<ServerLanguageT>,
+  +source_entity?: CoreEntityT,
   +subscribed?: boolean,
   +to_merge?: $ReadOnlyArray<CoreEntityT>,
   +top_tags?: $ReadOnlyArray<AggregatedTagT>,
@@ -100,6 +101,7 @@ declare type SanitizedCatalystContextT = {
   +stash: {
     +current_language: string,
     +genre_map?: {+[genreName: string]: GenreT, ...},
+    +source_entity?: CoreEntityT,
   },
   +user: ActiveEditorT | null,
 };

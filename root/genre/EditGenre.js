@@ -20,7 +20,6 @@ type Props = {
   +attrInfo: LinkAttrTypeOptionsT,
   +entity: GenreT,
   +form: GenreFormT,
-  +sourceEntity: GenreT,
   +typeInfo: LinkTypeOptionsT,
 };
 
@@ -29,7 +28,6 @@ const EditGenre = ({
   attrInfo,
   entity,
   form,
-  sourceEntity,
   typeInfo,
 }: Props): React.Element<typeof GenreLayout> => (
   <GenreLayout
@@ -42,7 +40,6 @@ const EditGenre = ({
       $c={$c}
       attrInfo={attrInfo}
       form={form}
-      sourceEntity={sourceEntity}
       typeInfo={typeInfo}
     />
     {manifest.js('genre/components/GenreEditForm', {async: 'async'})}

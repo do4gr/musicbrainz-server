@@ -10,6 +10,7 @@ import $ from 'jquery';
 import balanced from 'balanced-match';
 
 import {MIN_NAME_SIMILARITY} from '../../common/constants';
+import '../../common/entity';
 import MB from '../../common/MB';
 import {last} from '../../common/utility/arrays';
 import clean from '../../common/utility/clean';
@@ -248,8 +249,9 @@ export default function guessFeat(entity) {
 
 // For use outside of the release editor.
 MB.Control.initGuessFeatButton = function (formName) {
+  const source = MB.getSourceEntityInstance();
   const augmentedEntity = Object.assign(
-    Object.create(MB.sourceRelationshipEditor.source),
+    Object.create(source),
     {
       /*
        * Emulate an observable that just reads/writes
@@ -268,12 +270,6 @@ MB.Control.initGuessFeatButton = function (formName) {
         }
         return nameInput.value;
       },
-      /*
-       * Confusingly, the artistCredit object used to generated hidden input
-       * fields is also different from MB.sourceRelationshipEditor.source's,
-       * so we have to replace this field too.
-       */
-      artistCredit: MB.sourceEntity.artistCredit,
     },
   );
 

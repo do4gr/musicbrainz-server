@@ -19,7 +19,6 @@ type Props = {
   +$c: CatalystContextT,
   +attrInfo: LinkAttrTypeOptionsT,
   +form: GenreFormT,
-  +sourceEntity: {entityType: 'genre'},
   +typeInfo: LinkTypeOptionsT,
 };
 
@@ -27,7 +26,6 @@ const CreateGenre = ({
   $c,
   attrInfo,
   form,
-  sourceEntity,
   typeInfo,
 }: Props): React.Element<typeof Layout> => (
   <Layout fullWidth title={l('Add a new genre')}>
@@ -37,7 +35,6 @@ const CreateGenre = ({
         $c={$c}
         attrInfo={attrInfo}
         form={form}
-        sourceEntity={sourceEntity}
         typeInfo={typeInfo}
       />
     </div>

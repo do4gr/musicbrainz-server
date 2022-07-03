@@ -11,6 +11,7 @@ import $ from 'jquery';
 import * as React from 'react';
 
 import MB from '../../common/MB';
+import {getSourceEntityData} from '../../common/utility/catalyst';
 import EnterEdit from '../../../../components/EnterEdit';
 import EnterEditNote from '../../../../components/EnterEditNote';
 import FormRowTextLong from '../../../../components/FormRowTextLong';
@@ -23,7 +24,6 @@ type Props = {
   +$c: CatalystContextT,
   +attrInfo: LinkAttrTypeOptionsT,
   +form: GenreFormT,
-  +sourceEntity: GenreT | {entityType: 'genre'},
   +typeInfo: LinkTypeOptionsT,
 };
 
@@ -31,7 +31,6 @@ const GenreEditForm = ({
   $c,
   attrInfo,
   form,
-  sourceEntity,
   typeInfo,
 }: Props): React.Element<'form'> => {
   const externalLinksEditorContainerRef = React.useRef(null);
@@ -59,7 +58,7 @@ const GenreEditForm = ({
 
     const {externalLinksEditorRef, root} = createExternalLinksEditor({
       mountPoint: externalLinksEditorContainer,
-      sourceData: sourceEntity,
+      sourceData: getSourceEntityData(),
     });
 
     // $FlowIgnore[incompatible-type]
@@ -79,7 +78,7 @@ const GenreEditForm = ({
         }
       }, 0);
     };
-  }, [attrInfo, sourceEntity, typeInfo]);
+  }, [attrInfo, typeInfo]);
 
   return (
     <form
