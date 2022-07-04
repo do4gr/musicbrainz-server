@@ -15,9 +15,10 @@ import * as React from 'react';
 import * as ReactDOMClient from 'react-dom/client';
 
 import {
+  EMPTY_PARTIAL_DATE,
   FAVICON_CLASSES,
-  VIDEO_ATTRIBUTE_ID,
   VIDEO_ATTRIBUTE_GID,
+  VIDEO_ATTRIBUTE_ID,
 } from '../common/constants';
 import {compare, l} from '../common/i18n';
 import expand2react from '../common/i18n/expand2react';
@@ -602,8 +603,8 @@ export class ExternalLinksEditor
 
       pushInput(prefix, 'link_type_id', String(link.type) || '');
 
-      const beginDate = link.begin_date || nullPartialDate;
-      const endDate = link.end_date || nullPartialDate;
+      const beginDate = link.begin_date || EMPTY_PARTIAL_DATE;
+      const endDate = link.end_date || EMPTY_PARTIAL_DATE;
 
       pushInput(
         prefix,
@@ -1498,16 +1499,10 @@ export class ExternalLink extends React.Component<LinkProps> {
   }
 }
 
-const nullPartialDate: PartialDateT = {
-  day: null,
-  month: null,
-  year: null,
-};
-
 const defaultLinkState: LinkStateT = {
-  begin_date: nullPartialDate,
+  begin_date: EMPTY_PARTIAL_DATE,
   deleted: false,
-  end_date: nullPartialDate,
+  end_date: EMPTY_PARTIAL_DATE,
   ended: false,
   rawUrl: '',
   relationship: null,
@@ -1577,9 +1572,9 @@ export function parseRelationships(
     const target = data.target;
     if (target.entityType === 'url') {
       accum.push({
-        begin_date: data.begin_date || nullPartialDate,
+        begin_date: data.begin_date || EMPTY_PARTIAL_DATE,
         deleted: false,
-        end_date: data.end_date || nullPartialDate,
+        end_date: data.end_date || EMPTY_PARTIAL_DATE,
         ended: data.ended || false,
         rawUrl: target.name,
         relationship: data.id,
