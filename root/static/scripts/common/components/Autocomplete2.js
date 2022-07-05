@@ -488,6 +488,15 @@ const Autocomplete2 = (React.memo(<+T: EntityItemT>(
     }
   }
 
+  const handleMenuMouseDown = function (event) {
+    /*
+     * Clicking on the menu itself (including any scroll bar) should not
+     * close the menu.  `preventDefault` here prevents a blur event on
+     * the input.
+     */
+    event.preventDefault();
+  };
+
   const handleOuterClick = React.useCallback(() => {
     stopRequests();
     if (isOpen) {
@@ -689,6 +698,7 @@ const Autocomplete2 = (React.memo(<+T: EntityItemT>(
         aria-controls={statusId}
         aria-labelledby={labelId}
         id={menuId}
+        onMouseDown={handleMenuMouseDown}
         role="listbox"
         style={{
           visibility: (isOpen && !disabled)
